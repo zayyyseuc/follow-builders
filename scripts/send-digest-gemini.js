@@ -16,7 +16,7 @@ const FEED_X_URL = 'https://raw.githubusercontent.com/zayyyseuc/follow-builders/
 const FEED_PODCASTS_URL = 'https://raw.githubusercontent.com/zayyyseuc/follow-builders/main/feed-podcasts.json';
 const FEED_BLOGS_URL = 'https://raw.githubusercontent.com/zayyyseuc/follow-builders/main/feed-blogs.json';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const OPENAI_API_URL = 'https://yh.m7ai.com/v1/chat/completions';
 
 // ---------------------------------------------------------------------------
 
@@ -88,23 +88,28 @@ ${sections.join('\n\n')}`;
 // ---------------------------------------------------------------------------
 
 async function callGemini(prompt, apiKey) {
-  const res = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+  const res = await fetch(OPENAI_API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 2048, temperature: 0.7 }
+      model: 'codex',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2048,
+      temperature: 0.7
     })
   });
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Gemini API error: ${res.status} — ${err}`);
+    throw new Error(`API error: ${res.status} — ${err}`);
   }
 
   const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('Gemini returned empty response');
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error('API returned empty response');
   return text;
 }
 
