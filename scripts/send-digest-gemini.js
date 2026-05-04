@@ -87,7 +87,7 @@ ${sections.join('\n\n')}`;
 
 // ---------------------------------------------------------------------------
 
-async function callGemini(prompt, apiKey) {
+async function callOpenAI(prompt, apiKey) {
   const res = await fetch(OPENAI_API_URL, {
     method: 'POST',
     headers: {
@@ -150,11 +150,11 @@ async function sendEmail(text, apiKey, toEmail) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const geminiKey = process.env.GEMINI_API_KEY;
+  const geminiKey = process.env.OPENAI_API_KEY;
   const resendKey = process.env.RESEND_API_KEY;
   const toEmail = process.env.DIGEST_EMAIL;
 
-  if (!geminiKey) throw new Error('GEMINI_API_KEY not set');
+  if (!geminiKey) throw new Error('OPENAI_API_KEY not set');
   if (!resendKey) throw new Error('RESEND_API_KEY not set');
   if (!toEmail) throw new Error('DIGEST_EMAIL not set');
 
@@ -181,8 +181,8 @@ async function main() {
     return;
   }
 
-  console.log('Calling Gemini...');
-  const digest = await callGemini(prompt, geminiKey);
+  console.log('Calling OpenAI proxy...');
+  const digest = await callOpenAI(prompt, geminiKey);
   console.log(`Digest generated (${digest.length} chars)`);
 
   console.log(`Sending email to ${toEmail}...`);
