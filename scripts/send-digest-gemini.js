@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 // ============================================================================
-// Follow Builders — Daily Digest via Gemini + Resend
+// Follow Builders — Daily Digest via OpenAI proxy + Resend
 // ============================================================================
-// Runs in GitHub Actions. Fetches the central feeds, calls Gemini API to
-// remix the content into a digest, then sends it via Resend email.
+// Runs in GitHub Actions. Fetches the central feeds, calls OpenAI-compatible
+// proxy API to remix the content into a digest, then sends it via Resend email.
 //
 // Required env vars (set as GitHub Secrets):
-//   GEMINI_API_KEY   — Google AI Studio API key
+//   OPENAI_API_KEY   — OpenAI proxy API key
 //   RESEND_API_KEY   — Resend API key
 //   DIGEST_EMAIL     — recipient email address
 // ============================================================================
@@ -87,7 +87,7 @@ ${sections.join('\n\n')}`;
 
 // ---------------------------------------------------------------------------
 
-async function callGemini(prompt, apiKey) {
+async function callOpenAI(prompt, apiKey) {
   const res = await fetch(OPENAI_API_URL, {
     method: 'POST',
     headers: {
@@ -95,7 +95,7 @@ async function callGemini(prompt, apiKey) {
       'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: 'codex',
+      model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 2048,
       temperature: 0.7
@@ -150,11 +150,11 @@ async function sendEmail(text, apiKey, toEmail) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const geminiKey = process.env.GEMINI_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
   const resendKey = process.env.RESEND_API_KEY;
   const toEmail = process.env.DIGEST_EMAIL;
 
-  if (!geminiKey) throw new Error('GEMINI_API_KEY not set');
+  if (!openaiKey) throw new Error('OPENAI_API_KEY not set');
   if (!resendKey) throw new Error('RESEND_API_KEY not set');
   if (!toEmail) throw new Error('DIGEST_EMAIL not set');
 
@@ -181,8 +181,8 @@ async function main() {
     return;
   }
 
-  console.log('Calling Gemini...');
-  const digest = await callGemini(prompt, geminiKey);
+  console.log('Calling OpenAI proxy...');
+  const digest = await callOpenAI(prompt, openaiKey);
   console.log(`Digest generated (${digest.length} chars)`);
 
   console.log(`Sending email to ${toEmail}...`);
